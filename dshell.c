@@ -149,7 +149,6 @@ int main()
             }
             //First child
             if (child_pid == 0) {
-                printf("Child 1");
                 childProcess(command);
             }
             //Parent node
@@ -262,7 +261,7 @@ void childProcess(char **command)
        return;
     }
     
-    if (strcmp(command[0], "exit") == 0) {
+    if (strcmp(command[0], "clear") == 0) {
         printf("\033[H\033[J");
        /* Skips the fork, as child process is no longer required */
        return;
