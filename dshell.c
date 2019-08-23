@@ -45,7 +45,7 @@ int main()
         //Implements the exit function, type "exit" to execute
         if (strcmp(command[0], "exit") == 0) {
             printf("Goodbye!\n");
-            exit(0);
+            return 0;
         }        
         
         //Flags which seperate between double and triple ampersands
@@ -88,11 +88,10 @@ int main()
             char **command2;
             command1 = get_input(string1);
             command2 = get_input(string2);
-        
-            child1_pid = fork();
-            child2_pid = fork();
             //Considering parallel execution via "&&&"
             if(tflag){
+            child1_pid = fork();
+            child2_pid = fork();
                 if (child1_pid < 0 || child2_pid < 0) {
                     printf("Fork failed");
                     exit(1);
@@ -112,32 +111,33 @@ int main()
                 }
                 //Third child, a byproduct of forking
                 else if(child1_pid == 0 && child2_pid == 0) {
-                    continue;
+                    exit(0);
                 }
             }
             if(dflag){
-                if (child1_pid < 0 || child2_pid < 0) {
-                    printf("Fork failed");
-                    exit(1);
-                }
-                //Parent node
-                if (child1_pid > 0 && child2_pid > 0) {
-                    waitpid(child1_pid, &stat_loc, WUNTRACED);
-                    waitpid(child2_pid, &stat_loc, WUNTRACED);
-                }
-                //First child
-                if (child1_pid == 0 && child2_pid > 0) {
+            int a;
+            for(a = 0; a < 2; a++)
+            {
+            child_pid = fork();
+            if (child_pid < 0) {
+                printf("Fork failed");
+                exit(1);
+            }
+            //First child
+            if (child_pid == 0) {
+                if(a == 0){
                     childProcess(command1);
                 }
-                //Second child
-                if (child1_pid > 0 && child2_pid == 0) {
-                    waitpid(child1_pid, &stat_loc, WUNTRACED);
-                    childProcess(command2);
+                if(a == 1)
+                {
+                childProcess(command2);
                 }
-                //Third child, a byproduct of forking
-                else if(child1_pid == 0 && child2_pid == 0) {
-                    continue;
-                }
+            }
+            //Parent node
+            else {
+                waitpid(child_pid, &stat_loc, WUNTRACED);
+            }
+            }
             }            
         }
         else
@@ -260,6 +260,12 @@ void childProcess(char **command)
        /* Skips the fork, as child process is no longer required */
        return;
     }
+
+    //Implements the exit function, type "exit" to execute
+    if (strcmp(command[0], "exit") == 0) {
+        printf("Goodbye!\n");
+        return;
+    }        
     
     if (strcmp(command[0], "clear") == 0) {
         printf("\033[H\033[J");
